@@ -1,0 +1,530 @@
+================================================================================
+                        CODEBUDDY - COMPLETE PROJECT DOCUMENTATION
+================================================================================
+
+TABLE OF CONTENTS
+-----------------
+1.  Project Overview
+2.  Directory Structure
+3.  Architecture
+4.  Backend Components
+5.  Frontend Components
+6.  LangChain Usage (Directories & Files)
+7.  LangGraph Usage (Directories & Files)
+8.  Configuration
+9.  API Endpoints
+10. Running the Project
+11. Testing
+12. Build & Deployment
+
+================================================================================
+1. PROJECT OVERVIEW
+================================================================================
+
+CODEBUDDY is an AI-powered multi-agent coding assistant that uses local LLMs
+(via Ollama) to provide 8 specialized coding agents. It features:
+
+  - 8 AI agents: Coder, Debugger, Architect, Reviewer, Documenter, Tester,
+    Refactorer, Explainer
+  - LangGraph-powered orchestrator for multi-agent workflows
+  - FastAPI backend with async SQLite database
+  - React 19 + TypeScript frontend with premium dark emerald + gold theme
+  - WebSocket support for real-time communication
+  - Fully offline operation using local Ollama models
+
+Tech Stack:
+  - Backend: Python 3.14, FastAPI, SQLAlchemy, LangChain, LangGraph, Ollama
+  - Frontend: React 19, TypeScript, Vite, Zustand, React Router v7
+  - Database: SQLite (via aiosqlite + SQLAlchemy async)
+  - LLM: Ollama (default model: gemma3:1b)
+
+================================================================================
+2. DIRECTORY STRUCTURE
+================================================================================
+
+CODEBUDDY/
+|
++-- backend/                              # Python FastAPI backend
+|   +-- .env                              # Environment configuration
+|   +-- requirements.txt                  # Python dependencies
+|   +-- pytest.ini                        # Pytest configuration
+|   +-- run_server.py                     # Server entry point
+|   +-- codebuddy.db                      # SQLite database file
+|   +-- server.log                        # Server log file
+|   +-- app/
+|   |   +-- __init__.py
+|   |   +-- main.py                       # FastAPI app entry, CORS, routers, WebSocket
+|   |   +-- agents/                       # Agent implementations & orchestration
+|   |   |   +-- __init__.py              # Exports all agents + orchestrator + registry
+|   |   |   +-- base_agent.py            # BaseAgent class (all agents inherit)
+|   |   |   +-- orchestrator.py          # *** LANGGRAPH *** orchestration engine
+|   |   |   +-- registry.py              # AGENT_REGISTRY dict
+|   |   |   +-- architect_agent.py
+|   |   |   +-- coder_agent.py
+|   |   |   +-- debugger_agent.py
+|   |   |   +-- documenter_agent.py
+|   |   |   +-- explainer_agent.py
+|   |   |   +-- refactorer_agent.py
+|   |   |   +-- reviewer_agent.py
+|   |   |   +-- tester_agent.py
+|   |   +-- api/                          # REST API routes
+|   |   |   +-- __init__.py
+|   |   |   +-- v1/
+|   |   |       +-- __init__.py
+|   |   |       +-- agents.py            # Agent execution endpoints
+|   |   |       +-- auth.py              # Authentication endpoints
+|   |   |       +-- chat.py              # Chat endpoint
+|   |   |       +-- files.py             # File management endpoints
+|   |   |       +-- memory.py            # Memory endpoints
+|   |   |       +-- projects.py          # Project CRUD endpoints
+|   |   |       +-- terminal.py          # Terminal endpoint
+|   |   |       +-- visualization.py     # Visualization endpoint
+|   |   +-- core/                         # Core configuration & database
+|   |   |   +-- __init__.py
+|   |   |   +-- config.py                # Settings from .env
+|   |   |   +-- database.py              # SQLAlchemy async engine & tables
+|   |   |   +-- security.py              # JWT / auth utilities
+|   |   +-- models/                       # SQLAlchemy ORM models
+|   |   |   +-- __init__.py
+|   |   |   +-- chat.py
+|   |   |   +-- file.py
+|   |   |   +-- memory.py
+|   |   |   +-- project.py
+|   |   |   +-- user.py
+|   |   +-- schemas/                      # Pydantic schemas
+|   |   |   +-- __init__.py
+|   |   |   +-- agent.py
+|   |   |   +-- chat.py
+|   |   |   +-- file.py
+|   |   |   +-- project.py
+|   |   |   +-- user.py
+|   |   +-- services/                     # Business logic services
+|   |   |   +-- __init__.py
+|   |   |   +-- agent_orchestrator.py    # *** LANGGRAPH *** wrapper service
+|   |   |   +-- llm_service.py           # *** LANGCHAIN *** LLM integration
+|   |   |   +-- memory_service.py
+|   |   |   +-- websocket_manager.py
+|   +-- tests/                            # Pytest test suite
+|       +-- __init__.py
+|       +-- conftest.py
+|       +-- sample_test_examples.py
+|       +-- test_api.py
+|       +-- test_memory.py
+|
++-- frontend/                             # React + TypeScript frontend
+|   +-- package.json
+|   +-- vite.config.ts
+|   +-- tsconfig.json / tsconfig.app.json / tsconfig.node.json
+|   +-- index.html
+|   +-- .oxlintrc.json
+|   +-- public/
+|   |   +-- bg_intro.mp4                 # Welcome page background video
+|   |   +-- background.mp4
+|   |   +-- favicon.svg
+|   |   +-- icons.svg
+|   +-- Ultronvoice.mp3                  # Audio played after intro video
+|   +-- src/
+|       +-- main.tsx                     # React entry point
+|       +-- App.tsx                      # Router setup
+|       +-- App.css
+|       +-- index.css                    # Global styles, theme vars, responsiveness
+|       +-- api.ts                       # API client (axios/fetch wrapper)
+|       +-- types.ts                     # Shared TypeScript types
+|       +-- components/
+|       |   +-- Layout.tsx               # Main layout with sidebar
+|       |   +-- CodeEditor.tsx
+|       |   +-- EmptyState.tsx
+|       |   +-- ErrorBoundary.tsx
+|       |   +-- Loading.tsx
+|       |   +-- MarkdownRenderer.tsx     # Renders markdown with syntax highlighting
+|       |   +-- MemoryPanel.tsx
+|       |   +-- Terminal.tsx
+|       +-- pages/
+|       |   +-- Welcome.tsx              # Intro video + landing page
+|       |   +-- Dashboard.tsx
+|       |   +-- Chat.tsx                 # Multi-agent chat interface
+|       |   +-- Agents.tsx               # Agent listing page
+|       |   +-- AgentPage.tsx            # Single agent interaction page
+|       |   +-- Projects.tsx
+|       |   +-- ProjectDetail.tsx
+|       |   +-- agents/                  # Individual agent pages
+|       |       +-- index.ts
+|       |       +-- ArchitectAgentPage.tsx
+|       |       +-- CoderAgentPage.tsx
+|       |       +-- DebuggerAgentPage.tsx
+|       |       +-- DocumenterAgentPage.tsx
+|       |       +-- ExplainerAgentPage.tsx
+|       |       +-- RefactorerAgentPage.tsx
+|       |       +-- ReviewerAgentPage.tsx
+|       |       +-- TesterAgentPage.tsx
+|       +-- hooks/
+|       |   +-- useChat.ts
+|       |   +-- useWebSocket.ts
+|       +-- stores/
+|       |   +-- useStore.ts              # Zustand global state
+|       +-- services/
+|           +-- memory.ts
+|           +-- websocket.ts
+
+================================================================================
+3. ARCHITECTURE
+================================================================================
+
+The application follows a three-tier architecture:
+
+  [React Frontend] <--HTTP/WS--> [FastAPI Backend] <--LLM--> [Ollama]
+
+  - Frontend (port 5173): React SPA with React Router v7 for navigation,
+    Zustand for state management, Monaco editor for code editing.
+
+  - Backend (port 8000): FastAPI serving REST endpoints and WebSocket
+    connections. Uses SQLAlchemy async ORM with SQLite.
+
+  - LLM Layer: LangChain BaseChatModel subclasses communicate with Ollama
+    (default: gemma3:1b). Fallback and OpenAI providers also supported.
+
+Flow:
+  1. User sends a request via Chat or Agent page
+  2. Backend API receives request
+  3. Agent orchestrator (LangGraph) routes to appropriate agent(s)
+  4. Agent uses BaseAgent.execute() -> llm_service.chat() -> Ollama
+  5. Response streamed back to frontend
+
+================================================================================
+4. BACKEND COMPONENTS
+================================================================================
+
+4.1 main.py
+  - Creates FastAPI app with CORS middleware
+  - Registers all API routers under /api/v1/
+  - Health check at /health and root at /
+  - WebSocket endpoint at /ws/{client_id}
+
+4.2 Agents (app/agents/)
+  - BaseAgent: Abstract base class with execute() method
+    - execute() builds messages, calls llm_service.chat(), returns
+      {"content": str, "tokens_used": int}
+  - 8 specialized agents inherit BaseAgent:
+    - CoderAgent, DebuggerAgent, ArchitectAgent, ReviewerAgent,
+      DocumenterAgent, TesterAgent, RefactorerAgent, ExplainerAgent
+    Each defines: name, description, icon, color, system_prompt
+  - AgentOrchestrator (orchestrator.py):
+    - Uses LangGraph StateGraph for multi-agent orchestration
+    - Builds dynamic graph per agent subset (cached by tuple key)
+    - Nodes: intent_router, planner, context_builder, agent nodes,
+      reviewer, response_formatter
+  - AGENT_REGISTRY (registry.py): dict of all agents keyed by "agent_key"
+
+4.3 API (app/api/v1/)
+  - agents.py: GET /agents (list), POST /agents/{agent_key}/execute
+    (single agent), POST /agents/orchestrate (multi-agent)
+  - chat.py: POST /chat (send message, optionally stream)
+  - auth.py: POST /auth/register, /auth/login, /auth/me
+  - projects.py: CRUD for projects
+  - files.py: CRUD for project files
+  - terminal.py: POST /terminal/execute
+  - memory.py: GET/POST/DELETE memory entries
+  - visualization.py: POST /visualization/generate
+
+4.4 Services (app/services/)
+  - llm_service.py: LLM integration with LangChain
+  - agent_orchestrator.py: Wraps LangGraph orchestrator for API use
+  - memory_service.py: Memory CRUD operations
+  - websocket_manager.py: WebSocket connection management
+
+4.5 Database (app/core/)
+  - database.py: Async SQLAlchemy engine with SQLite
+  - Models: User, Project, File, Chat, Memory
+
+================================================================================
+5. FRONTEND COMPONENTS
+================================================================================
+
+5.1 Pages
+  - Welcome.tsx: Landing page with intro video + Ultronvoice.mp3 audio
+  - Dashboard.tsx: Main dashboard
+  - Chat.tsx: Multi-agent chat with streaming responses
+  - Agents.tsx: Grid of all 8 agents
+  - AgentPage.tsx: Single agent interaction
+  - Projects.tsx, ProjectDetail.tsx: Project management
+
+5.2 Components
+  - Layout.tsx: App shell with sidebar navigation
+  - MarkdownRenderer.tsx: Renders markdown with Prism syntax highlighting
+  - CodeEditor.tsx: Monaco editor wrapper
+  - Terminal.tsx: Xterm.js terminal
+  - MemoryPanel.tsx: Memory management UI
+  - ErrorBoundary.tsx: React error boundary
+
+5.3 State Management
+  - useStore.ts: Zustand store for global state
+  - useChat.ts: Hook for chat operations
+  - useWebSocket.ts: Hook for WebSocket connections
+
+5.4 Theme
+  - index.css: Premium dark emerald + gold theme
+    - --bg: #050a05 (deep black)
+    - --accent: #00d166 (emerald)
+    - --gold: #d4a843 (gold)
+    - Mobile responsive: 1024px, 768px, 480px breakpoints
+
+================================================================================
+6. LANGCHAIN USAGE (DIRECTORIES & FILES)
+================================================================================
+
+LangChain is used in the Backend layer only. Here are the exact directories
+and files:
+
+6.1 backend/requirements.txt (line 17-18, 20)
+  -----------------------------------------------
+  Dependency declarations:
+    langchain>=0.3.0
+    langchain-core>=0.3.0
+    langchain-community>=0.3.0
+  -----------------------------------------------
+
+6.2 backend/app/services/llm_service.py  <-- PRIMARY LANGCHAIN USAGE
+  -----------------------------------------------
+  Imports:
+    from langchain_core.language_models.chat_models import BaseChatModel
+    from langchain_core.messages import HumanMessage, SystemMessage
+    from langchain_core.outputs import ChatGeneration, ChatResult
+
+  Three custom chat models extending BaseChatModel:
+    a) FallbackChatModel  - Returns mock responses for testing
+    b) OllamaChatModel    - Calls Ollama API (default provider)
+    c) OpenAIChatModel    - Calls OpenAI-compatible API
+
+  LLMService class methods:
+    - get_chat_model()       -> Returns appropriate BaseChatModel instance
+    - _check_ollama()        -> Pings Ollama to verify availability
+    - _call_ollama()         -> Sends request to Ollama /api/chat endpoint
+    - _call_openai()         -> Sends request to OpenAI API
+    - _fallback()            -> Returns mock LLM response
+    - chat()                 -> Main chat method, routes to selected provider
+    - chat_with_agents()     -> Multi-turn chat with agent context
+  -----------------------------------------------
+
+6.3 Summary of LangChain file locations:
+
+  | Directory                        | File                   | Usage                |
+  |----------------------------------|------------------------|----------------------|
+  | backend/                         | requirements.txt       | Package dependencies |
+  | backend/app/services/            | llm_service.py         | LLM integration      |
+
+  No other files in the project import from langchain or langchain_core.
+
+================================================================================
+7. LANGGRAPH USAGE (DIRECTORIES & FILES)
+================================================================================
+
+LangGraph is used for multi-agent orchestration in the Backend layer.
+Here are the exact directories and files:
+
+7.1 backend/requirements.txt (line 19)
+  -----------------------------------------------
+    langgraph>=0.2.0
+  -----------------------------------------------
+
+7.2 backend/app/agents/orchestrator.py  <-- PRIMARY LANGGRAPH USAGE
+  -----------------------------------------------
+  Import:
+    from langgraph.graph import StateGraph, START, END
+
+  Key components:
+    a) AgentState (TypedDict):
+       - request: str
+       - context: dict
+       - agents_to_run: list[str]
+       - results: dict
+       - errors: list
+       - execution_plan: str
+       - memory_context: str
+       - reviewed: bool
+       - formatted_output: str
+
+    b) _build_graph_for_agents(agent_keys: tuple) -> CompiledStateGraph:
+       - Builds a StateGraph dynamically for the given agent subset
+       - Caches graphs by (agent_key_tuple) for reuse
+       - Standard nodes: intent_router, planner, context_builder,
+         reviewer, response_formatter
+       - Dynamic agent nodes: prefixed with "agent_" to avoid name
+         collisions (e.g., avoid "reviewer" clash with agent name)
+       - Uses closures (make_node) so each agent node runs its own
+         captured agent instance at graph build time
+
+    c) AgentOrchestrator class:
+       - execute_single(request, context, agent_key) -> dict
+         Routes to single agent directly (bypasses graph)
+       - orchestrate(request, context, agent_keys) -> dict
+         Builds/retrieves cached graph, runs with agent subset
+
+    d) Singleton instance:
+       agent_orchestrator = AgentOrchestrator()
+  -----------------------------------------------
+
+7.3 backend/app/services/agent_orchestrator.py
+  -----------------------------------------------
+  Import:
+    from app.agents.orchestrator import agent_orchestrator as langgraph_orchestrator
+
+  Usage:
+    - execute_single() -> calls langgraph_orchestrator.execute_single()
+    - orchestrate()    -> calls langgraph_orchestrator.orchestrate()
+  -----------------------------------------------
+
+7.4 Summary of LangGraph file locations:
+
+  | Directory                        | File                   | Usage                    |
+  |----------------------------------|------------------------|--------------------------|
+  | backend/                         | requirements.txt       | Package dependency       |
+  | backend/app/agents/              | orchestrator.py        | Graph definition + exec |
+  | backend/app/services/            | agent_orchestrator.py  | Service wrapper          |
+
+  No other files in the project import from langgraph.
+
+================================================================================
+8. CONFIGURATION
+================================================================================
+
+8.1 Environment Variables (backend/.env)
+  -----------------------------------------------
+  DATABASE_URL      = sqlite+aiosqlite:///./codebuddy.db
+  REDIS_URL         = redis://localhost:6379
+  SECRET_KEY        = cb-super-secret-key-change-in-production
+  ALGORITHM         = HS256
+  ACCESS_TOKEN_EXPIRE_MINUTES = 60
+  OLLAMA_BASE_URL   = http://localhost:11434
+  MODEL_PROVIDER    = ollama       (options: ollama, openai, fallback)
+  MODEL_NAME        = gemma3:1b
+  CORS_ORIGINS      = ["http://localhost:5173","http://localhost:3000",
+                       "http://localhost:8080"]
+  -----------------------------------------------
+
+8.2 Available Ollama Models
+  - qwen3:8b         (5.2 GB)
+  - gemma3           (3.3 GB)
+  - gemma3:1b        (815 MB)   <-- default
+  - nomic-embed-text (274 MB)
+
+8.3 Provider Switching
+  Set MODEL_PROVIDER in .env to switch:
+  - "ollama"  -> Uses Ollama (local, default gemma3:1b)
+  - "openai"  -> Uses OpenAI-compatible API
+  - "fallback" -> Returns mock responses (no LLM needed)
+
+================================================================================
+9. API ENDPOINTS
+================================================================================
+
+  METHOD  PATH                                    DESCRIPTION
+  ------  ----                                    -----------
+  GET     /                                       Root info
+  GET     /health                                 Health check
+  GET     /docs                                   Swagger UI
+
+  Auth:
+  POST    /api/v1/auth/register                   Register user
+  POST    /api/v1/auth/login                      Login
+  GET     /api/v1/auth/me                         Get current user
+
+  Projects:
+  GET     /api/v1/projects                        List projects
+  POST    /api/v1/projects                        Create project
+  GET     /api/v1/projects/{id}                   Get project
+  PUT     /api/v1/projects/{id}                   Update project
+  DELETE  /api/v1/projects/{id}                   Delete project
+
+  Files:
+  GET     /api/v1/files/{project_id}              List project files
+  POST    /api/v1/files/{project_id}              Create file
+  GET     /api/v1/files/{project_id}/{file_id}    Get file content
+  PUT     /api/v1/files/{project_id}/{file_id}    Update file
+  DELETE  /api/v1/files/{project_id}/{file_id}    Delete file
+
+  Agents:
+  GET     /api/v1/agents                          List all agents
+  POST    /api/v1/agents/{agent_key}/execute      Execute single agent
+  POST    /api/v1/agents/orchestrate              Multi-agent orchestration
+
+  Chat:
+  POST    /api/v1/chat                            Send chat message
+
+  Terminal:
+  POST    /api/v1/terminal/execute                Execute terminal command
+
+  Visualization:
+  POST    /api/v1/visualization/generate          Generate visualization
+
+  Memory:
+  GET     /api/v1/memory                          List memory entries
+  POST    /api/v1/memory                          Create memory entry
+  DELETE  /api/v1/memory/{id}                     Delete memory entry
+
+  WebSocket:
+  WS      /ws/{client_id}                         Real-time communication
+
+================================================================================
+10. RUNNING THE PROJECT
+================================================================================
+
+Prerequisites:
+  - Python 3.14+
+  - Node.js 22+
+  - Ollama (with model pulled: gemma3:1b)
+
+10.1 Backend
+  cd CODEBUDDY/backend
+  python -m venv venv
+  .\venv\Scripts\activate      (Windows)
+  pip install -r requirements.txt
+  uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  Backend runs at: http://localhost:8000
+  API Docs at:     http://localhost:8000/docs
+
+10.2 Frontend
+  cd CODEBUDDY/frontend
+  npm install
+  npx vite --port 5173
+
+  Frontend runs at: http://localhost:5173
+
+10.3 Ollama (required for AI responses)
+  ollama serve
+  ollama pull gemma3:1b
+
+================================================================================
+11. TESTING
+================================================================================
+
+Backend tests (pytest):
+  cd CODEBUDDY/backend
+  pytest -v                   # Run all tests (46 tests)
+  pytest tests/test_api.py    # API-specific tests
+
+Frontend (TypeScript check + build):
+  cd CODEBUDDY/frontend
+  npx tsc --noEmit            # TypeScript compilation check
+  npx vite build              # Production build
+
+================================================================================
+12. BUILD & DEPLOYMENT
+================================================================================
+
+Production Build:
+  cd CODEBUDDY/frontend
+  npx vite build              # Output in frontend/dist/
+
+  The build produces ~1MB JS (119 modules) with syntax highlighting.
+
+Deployment Notes:
+  - Backend requires Python 3.14+, Ollama running locally
+  - CORS_ORIGINS in .env must match frontend URL
+  - For production, set a strong SECRET_KEY
+  - Database file (codebuddy.db) is auto-created on first run
+  - ollama keep_alive: "5m" keeps model loaded between requests
+
+================================================================================
+                        END OF DOCUMENTATION
+================================================================================
