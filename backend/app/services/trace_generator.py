@@ -1,7 +1,6 @@
 import ast
 import json
-import textwrap
-import traceback
+import re
 from typing import Any
 
 
@@ -102,7 +101,7 @@ def _trace_sorting(code: str, algo_type: str, input_data: str) -> dict:
                 step += 1
                 if arr[j] > arr[j + 1]:
                     arr[j], arr[j + 1] = arr[j + 1], arr[j]
-                    steps.append(_make_step(step, line + 2, "swap", {"i": i, "j": j, "arr": arr.copy()}, {"type": "array", "values": arr.copy()}, [j, j + 1], "", f"Swapped {arr[j+1]} and {arr[j]} because {arr[j+1]} > {arr[j]}"))
+                    steps.append(_make_step(step, line + 2, "swap", {"i": i, "j": j, "arr": arr.copy()}, {"type": "array", "values": arr.copy()}, [j, j + 1], "", f"Swapped positions {j} and {j+1}: {arr[j]} and {arr[j+1]}"))
                     step += 1
         steps.append(_make_step(step, line, "complete", {"arr": arr.copy()}, {"type": "array", "values": arr.copy()}, [], f"Sorted array: {arr}", "Array is now sorted", complexity={"time": "O(n^2)", "space": "O(1)"}))
 
@@ -412,7 +411,6 @@ def _parse_array_input(input_data: str, code: str) -> list[int]:
         nums = [int(x) for x in input_data.replace("[", "").replace("]", "").split(",") if x.strip().isdigit() or (x.strip().lstrip("-").isdigit())]
         if nums:
             return nums
-    import re
     arrays = re.findall(r'\[([0-9,\s\-]+)\]', code)
     if arrays:
         try:
@@ -437,7 +435,6 @@ def _parse_target_input(input_data: str, code: str, arr: list[int]) -> int:
         nums = [int(x.strip()) for x in input_data.replace("[", "").replace("]", "").split(",") if x.strip().lstrip("-").isdigit()]
         if len(nums) > 1:
             return nums[-1]
-    import re
     targets = re.findall(r'target\s*=\s*(\d+)', code)
     if targets:
         return int(targets[0])
@@ -457,7 +454,6 @@ def _parse_int_input(input_data: str, code: str, default: int = 5) -> int:
         nums = [int(x) for x in input_data.split() if x.isdigit()]
         if nums:
             return nums[0]
-    import re
     n_match = re.search(r'n\s*=\s*(\d+)', code)
     if n_match:
         return int(n_match.group(1))
@@ -474,7 +470,6 @@ def _parse_list_input(input_data: str, code: str, default: list[int] | None = No
                 return [int(x) for x in parsed]
         except (json.JSONDecodeError, ValueError):
             pass
-    import re
     arrays = re.findall(r'\[([0-9,\s]+)\]', code)
     if arrays:
         try:
@@ -487,6 +482,5 @@ def _parse_list_input(input_data: str, code: str, default: list[int] | None = No
 
 
 def _extract_func_name(code: str) -> str | None:
-    import re
     match = re.search(r'def\s+(\w+)', code)
     return match.group(1) if match else None

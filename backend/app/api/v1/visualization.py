@@ -47,7 +47,8 @@ async def user_activity(user_id: str = "default", days: int = Query(7, ge=1, le=
     since = datetime.now(timezone.utc) - timedelta(days=days)
     project_count = await db.scalar(select(func.count(Project.id)).where(Project.user_id == user_id, Project.created_at >= since))
     chat_count = await db.scalar(select(func.count(Chat.id)).where(Chat.user_id == user_id, Chat.created_at >= since))
-    msg_count = await db.scalar(select(func.count(Message.id)).where(Message.created_at >= since))
+    chat_ids_q = select(Chat.id).where(Chat.user_id == user_id)
+    msg_count = await db.scalar(select(func.count(Message.id)).where(Message.chat_id.in_(chat_ids_q), Message.created_at >= since))
     return {"projects": project_count or 0, "chats": chat_count or 0, "messages": msg_count or 0, "period_days": days}
 
 

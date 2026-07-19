@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     MODEL_PROVIDER: str = "ollama"
-    MODEL_NAME: str = "gemma3"
+    MODEL_NAME: str = "gemma3:1b"
     CORS_ORIGINS: List[str] = ["*"]
     PROJECT_NAME: str = "CODEBUDDY"
 

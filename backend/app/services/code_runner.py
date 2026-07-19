@@ -1,5 +1,6 @@
 import sys
-import traceback
+import os
+import signal
 from io import StringIO
 from typing import Any
 
@@ -122,7 +123,25 @@ def run_and_trace(code: str, input_data: str = "") -> dict:
         }
 
     recorder.record(1, "start", explanation="Code execution started")
-    g = {"_tracer": recorder, "__builtins__": __builtins__}
+
+    _safe_builtins = dict(__builtins__) if isinstance(__builtins__, dict) else vars(__builtins__)
+    _safe_builtins.pop("exec", None)
+    _safe_builtins.pop("eval", None)
+    _safe_builtins.pop("compile", None)
+    _safe_builtins.pop("open", None)
+    _safe_builtins.pop("breakpoint", None)
+    _safe_builtins.pop("__import__", None)
+    _safe_builtins.pop("input", None)
+    _safe_builtins.pop("globals", None)
+    _safe_builtins.pop("locals", None)
+    _safe_builtins.pop("vars", None)
+    _safe_builtins.pop("memoryview", None)
+    _safe_builtins.pop("bytearray", None)
+    _safe_builtins.pop("copyright", None)
+    _safe_builtins.pop("credits", None)
+    _safe_builtins.pop("license", None)
+
+    g = {"_tracer": recorder, "__builtins__": _safe_builtins}
 
     try:
         sys.settrace(trace_callback)

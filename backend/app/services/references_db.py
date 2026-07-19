@@ -1,6 +1,3 @@
-from typing import Any
-
-
 REFERENCES: dict[str, dict] = {
     "Linear Search": {
         "main_concept": "Sequential Search",

@@ -106,7 +106,6 @@ class OpenAIChatModel(BaseChatModel):
         raise NotImplementedError("Synchronous generation not supported, use async")
 
     async def _agenerate(self, messages: list, stop: list[str] | None = None, run_manager: Any = None, **kwargs: Any) -> ChatResult:
-        import httpx
         url = "https://api.openai.com/v1/chat/completions"
         headers = {"Authorization": f"Bearer {self.openai_api_key}", "Content-Type": "application/json"}
         payload = {
@@ -175,14 +174,18 @@ class LLMService:
             return {"content": data["message"]["content"], "tokens_used": data.get("eval_count", 0)}
 
     async def _stream_ollama(self, url: str, payload: dict) -> AsyncGenerator[str, None]:
-        async with httpx.AsyncClient(timeout=120) as client:
-            async with client.stream("POST", url, json=payload) as resp:
-                resp.raise_for_status()
-                async for line in resp.aiter_lines():
-                    if line:
-                        chunk = json.loads(line)
-                        if "message" in chunk and "content" in chunk["message"]:
-                            yield chunk["message"]["content"]
+        try:
+            async with httpx.AsyncClient(timeout=120) as client:
+                async with client.stream("POST", url, json=payload) as resp:
+                    resp.raise_for_status()
+                    async for line in resp.aiter_lines():
+                        if line:
+                            chunk = json.loads(line)
+                            if "message" in chunk and "content" in chunk["message"]:
+                                yield chunk["message"]["content"]
+        except Exception as e:
+            logger.error(f"Ollama streaming failed: {e}")
+            yield f"\n[Streaming error: {e}]"
 
     async def _call_openai(self, messages: list[dict], stream: bool = False) -> dict | AsyncGenerator[str, None]:
         url = "https://api.openai.com/v1/chat/completions"
@@ -258,7 +261,9 @@ class LLMService:
         elapsed = int((time.monotonic() - start) * 1000)
         if isinstance(result, dict):
             return {"content": result["content"], "tokens_used": result.get("tokens_used", 0), "execution_time_ms": elapsed, "agent_name": agent_name}
-        return {"content": "", "tokens_used": 0, "execution_time_ms": elapsed, "agent_name": agent_name}
+        content = self._fallback(msgs, agent_name).get("content", "")
+        logger.warning(f"Unexpected result type from chat for agent {agent_name}, using fallback response")
+        return {"content": content, "tokens_used": 0, "execution_time_ms": elapsed, "agent_name": agent_name}
 
 
 llm_service = LLMService()

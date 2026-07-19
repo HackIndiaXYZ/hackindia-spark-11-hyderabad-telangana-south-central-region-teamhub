@@ -29,8 +29,8 @@ async def memory_context(request: str, user_id: str = Query("default")):
 
 
 @router.delete("/{key}")
-async def delete_memory(key: str):
-    success = await memory_service.delete(key)
+async def delete_memory(key: str, user_id: str = Query("default")):
+    success = await memory_service.delete(key, user_id)
     if not success:
         raise HTTPException(404, f"Memory with key '{key}' not found")
     return {"deleted": True}

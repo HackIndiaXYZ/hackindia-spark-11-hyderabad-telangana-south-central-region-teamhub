@@ -1,4 +1,4 @@
-from typing import Any
+
 
 
 ALTERNATIVES: dict[str, list[dict]] = {
@@ -459,7 +459,7 @@ def get_alternative_approaches(algorithm: str) -> list[dict]:
     return ALTERNATIVES.get(algorithm, [])
 
 
-def get_current_approach_complexity(algorithm: str) -> dict:
+def get_current_approach_complexity(algorithm: str) -> tuple[str, str]:
     complexity_map = {
         "Linear Search": ("O(n)", "O(1)"),
         "Binary Search": ("O(log n)", "O(1)"),

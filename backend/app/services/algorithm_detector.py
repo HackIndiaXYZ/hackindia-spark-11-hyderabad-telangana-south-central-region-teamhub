@@ -1,5 +1,4 @@
 import re
-from typing import Any
 
 
 def detect_algorithm(code: str) -> dict:
@@ -72,7 +71,7 @@ def _check_linear_search(code: str, c: str) -> float:
             score += 0.4
         if "==" in c or "return" in c:
             score += 0.3
-        if "if arr" in c or "if " in c and "==" in c:
+        if ("if arr" in c or "if " in c) and "==" in c:
             score += 0.3
     return min(1.0, score)
 

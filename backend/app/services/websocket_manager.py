@@ -1,5 +1,6 @@
 import json
 import logging
+import asyncio
 from fastapi import WebSocket
 from typing import Any
 
@@ -24,11 +25,19 @@ class WebSocketManager:
     async def send_message(self, client_id: str, message: dict):
         ws = self.connections.get(client_id)
         if ws:
-            await ws.send_json(message)
+            try:
+                await ws.send_json(message)
+            except Exception:
+                self.disconnect(client_id)
 
     async def broadcast(self, message: dict):
-        for ws in self.connections.values():
-            await ws.send_json(message)
+        snapshot = list(self.connections.values())
+        async def _send(ws: WebSocket):
+            try:
+                await ws.send_json(message)
+            except Exception:
+                pass
+        await asyncio.gather(*[_send(ws) for ws in snapshot], return_exceptions=True)
 
     async def handle_message(self, client_id: str, data: dict[str, Any]):
         msg_type = data.get("type", "")
@@ -37,8 +46,14 @@ class WebSocketManager:
         elif msg_type == "chat":
             from app.services.llm_service import llm_service
             msgs = [{"role": "user", "content": data.get("message", "")}]
-            async for chunk in await llm_service.chat(msgs, stream=True):
-                await self.send_message(client_id, {"type": "chunk", "content": chunk})
+            result = await llm_service.chat(msgs, stream=True)
+            if hasattr(result, "__aiter__"):
+                async for chunk in result:
+                    await self.send_message(client_id, {"type": "chunk", "content": chunk})
+            elif isinstance(result, dict):
+                content = result.get("content", "")
+                if content:
+                    await self.send_message(client_id, {"type": "chunk", "content": content})
             await self.send_message(client_id, {"type": "done"})
         else:
             await self.send_message(client_id, {"type": "error", "message": f"Unknown message type: {msg_type}"})

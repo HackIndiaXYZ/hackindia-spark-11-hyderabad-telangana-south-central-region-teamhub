@@ -1,6 +1,3 @@
-from typing import Any
-
-
 EXECUTION_TRACE_VERSION = "1.0"
 
 

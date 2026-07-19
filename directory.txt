@@ -1,0 +1,518 @@
+================================================================================
+        CODEBUDDY - COMPLETE DIRECTORY STRUCTURE & EXPLANATION
+================================================================================
+  Project: CODEBUDDY - AI-Powered Multi-Agent Coding Assistant
+  Team: Hyderabad Telangana South Central Region
+  Event: HackIndia Spark 11
+================================================================================
+
+
+================================================================================
+SECTION 1: FULL DIRECTORY TREE
+================================================================================
+
+hackindia-spark-11-hyderabad-telangana-south-central-region-teamhub-dev/
+|
+|-- .gitignore                                     Root gitignore rules
+|-- README.md                                      Project readme
+|-- documentation.txt                              Project documentation
+|-- group_discussion.txt                           Hackathon discussion guide
+|-- hackathon_qa_sets.txt                          Hackathon Q&A prep
+|-- directory.txt                                  This file
+|
+|-- backend/
+|   |-- .env                                       Environment variables (secrets, DB, LLM)
+|   |-- codebuddy.db                               SQLite database (runtime)
+|   |-- pytest.ini                                 Pytest configuration
+|   |-- requirements.txt                           Python dependencies (21 packages)
+|   |-- run_server.py                              Server launcher (uvicorn)
+|   |-- server.log                                 Runtime log
+|   |-- server_out.log                             Server stdout log
+|   |-- stderr.log                                 Stderr log
+|   |-- stdout.log                                 Stdout log
+|   |
+|   |-- app/                                       Main Python package
+|   |   |-- __init__.py                            Package marker
+|   |   |-- main.py                                FastAPI app + router registration
+|   |   |
+|   |   |-- core/                                  Core infrastructure
+|   |   |   |-- __init__.py                        Package marker
+|   |   |   |-- config.py                          Settings loader (pydantic-settings)
+|   |   |   |-- database.py                        SQLAlchemy async engine + tables
+|   |   |   |-- security.py                        JWT tokens + password hashing
+|   |   |
+|   |   |-- agents/                                AI agent system (LangGraph)
+|   |   |   |-- __init__.py                        Exports AGENT_REGISTRY
+|   |   |   |-- base_agent.py                      Abstract base agent class
+|   |   |   |-- orchestrator.py                    LangGraph StateGraph orchestrator
+|   |   |   |-- registry.py                        Agent name -> class mapping
+|   |   |   |-- coder_agent.py                     Writes clean code
+|   |   |   |-- debugger_agent.py                  Finds and fixes bugs
+|   |   |   |-- architect_agent.py                 Designs system architecture
+|   |   |   |-- reviewer_agent.py                  Code review (security/perf/style)
+|   |   |   |-- documenter_agent.py                Generates documentation
+|   |   |   |-- tester_agent.py                    Creates unit/integration tests
+|   |   |   |-- refactorer_agent.py                Optimizes and refactors code
+|   |   |   |-- explainer_agent.py                 Explains code logic
+|   |   |
+|   |   |-- api/                                   REST API layer
+|   |   |   |-- __init__.py                        Package marker
+|   |   |   |-- v1/                                API version 1
+|   |   |       |-- __init__.py                    Package marker
+|   |   |       |-- auth.py                        /api/v1/auth (register/login)
+|   |   |       |-- projects.py                    /api/v1/projects (CRUD)
+|   |   |       |-- files.py                       /api/v1/files (upload/manage)
+|   |   |       |-- agents.py                      /api/v1/agents (invoke agents)
+|   |   |       |-- chat.py                        /api/v1/chat (streaming chat)
+|   |   |       |-- terminal.py                    /ws (browser terminal)
+|   |   |       |-- visualization.py               /api/v1/visualization (traces)
+|   |   |       |-- memory.py                      /api/v1/memory (context)
+|   |   |
+|   |   |-- models/                                SQLAlchemy ORM models
+|   |   |   |-- __init__.py                        Package marker
+|   |   |   |-- user.py                            User table
+|   |   |   |-- project.py                         Project table
+|   |   |   |-- chat.py                            Chat/conversation table
+|   |   |   |-- file.py                            File table
+|   |   |   |-- memory.py                          Memory/context table
+|   |   |
+|   |   |-- schemas/                               Pydantic validation schemas
+|   |   |   |-- __init__.py                        Package marker
+|   |   |   |-- user.py                            User request/response schemas
+|   |   |   |-- project.py                         Project schemas
+|   |   |   |-- chat.py                            Chat message schemas
+|   |   |   |-- file.py                            File schemas
+|   |   |   |-- agent.py                           Agent invocation schemas
+|   |   |   |-- visualization.py                   Visualization data schemas
+|   |   |
+|   |   |-- services/                              Business logic layer
+|   |       |-- __init__.py                        Package marker
+|   |       |-- llm_service.py                     LLM integration (Ollama/OpenAI/fallback)
+|   |       |-- memory_service.py                  TF-IDF vector memory store
+|   |       |-- code_runner.py                     Sandboxed code execution
+|   |       |-- agent_orchestrator.py              High-level agent coordination
+|   |       |-- algorithm_detector.py              Auto-detect algorithm type
+|   |       |-- alternative_approaches.py          Generate alternative solutions
+|   |       |-- trace_generator.py                 Step-by-step execution traces
+|   |       |-- trace_normalizer.py                Normalize trace data
+|   |       |-- references_db.py                   Reference solutions database
+|   |       |-- websocket_manager.py               WebSocket connection manager
+|   |
+|   |-- tests/                                     Test suite
+|       |-- __init__.py                            Package marker
+|       |-- conftest.py                            Shared pytest fixtures
+|       |-- test_api.py                            API endpoint tests
+|       |-- test_memory.py                         Memory service tests
+|       |-- test_visualization_new.py              Visualization tests
+|       |-- sample_test_examples.py                Test data/examples
+|
+|-- frontend/
+    |-- .gitignore                                 Frontend gitignore
+    |-- .oxlintrc.json                             Oxlint linter config
+    |-- index.html                                 Vite entry HTML
+    |-- package.json                               NPM dependencies + scripts
+    |-- package-lock.json                          NPM lockfile
+    |-- tsconfig.json                              TypeScript base config
+    |-- tsconfig.app.json                          TS config for app build
+    |-- tsconfig.node.json                         TS config for Node tooling
+    |-- vite.config.ts                             Vite build configuration
+    |-- Ultronvoice.mp3                            Voice audio (duplicate)
+    |
+    |-- public/                                    Static assets (served at /)
+    |   |-- background.mp4                         Dark background loop video
+    |   |-- bg_intro.mp4                           Intro splash video
+    |   |-- bg_intro_original.mp4                  Original intro video
+    |   |-- favicon.svg                            App favicon
+    |   |-- icons.svg                              Icon sprite sheet
+    |   |-- Ultronvoice.mp3                        AI voice audio
+    |
+    |-- dist/                                      Production build output
+    |   |-- index.html
+    |   |-- assets/
+    |       |-- index-*.css                        Bundled CSS
+    |       |-- index-*.js                         Bundled JS
+    |
+    |-- node_modules/                              NPM installed packages
+    |
+    |-- src/                                       Source code
+        |-- main.tsx                               React entry point + router setup
+        |-- App.tsx                                App shell (dead code, empty)
+        |-- App.css                                App-level styles
+        |-- index.css                              Global CSS styles (~1400 lines)
+        |-- api.ts                                 API client (fetch wrappers)
+        |-- types.ts                               TypeScript type definitions
+        |
+        |-- assets/                                Static assets
+        |   |-- hero.png                           Hero image
+        |   |-- react.svg                          React logo
+        |   |-- vite.svg                           Vite logo
+        |
+        |-- stores/                                State management
+        |   |-- useStore.ts                        Zustand global store
+        |
+        |-- services/                              Client-side services
+        |   |-- websocket.ts                       WebSocket client
+        |   |-- memory.ts                          Memory API client
+        |
+        |-- hooks/                                 Custom React hooks
+        |   |-- useChat.ts                         Chat logic hook
+        |   |-- useWebSocket.ts                    WebSocket lifecycle hook
+        |
+        |-- utils/                                 Utility functions
+        |   |-- format.ts                          Formatting helpers
+        |
+        |-- components/                            Reusable UI components
+        |   |-- Layout.tsx                         App shell + sidebar nav
+        |   |-- ErrorBoundary.tsx                  React error boundary
+        |   |-- EmptyState.tsx                     Empty list placeholder
+        |   |-- CodeEditor.tsx                     Monaco Editor wrapper
+        |   |-- MarkdownRenderer.tsx               Markdown rendering
+        |   |-- Loading.tsx                        Loading indicators
+        |   |-- MemoryPanel.tsx                    Context/memory sidebar
+        |   |-- Terminal.tsx                       xterm.js terminal
+        |   |
+        |   |-- visualization/                     Code visualization components
+        |       |-- VisualizationPanel.tsx         Main visualization container
+        |       |-- VisualizationControls.tsx      Play/pause/step controls
+        |       |-- NormalCodeVisualizer.tsx        Step-by-step code highlighter
+        |       |-- DSAVisualizers.tsx             Data structure animations
+        |       |-- ExecutionDetails.tsx           Execution trace display
+        |       |-- ProgramOutputPanel.tsx         Program stdout display
+        |       |-- ApproachesPanel.tsx            Alternative solutions panel
+        |       |-- ReferencesPanel.tsx            Reference examples panel
+        |
+        |-- pages/                                 Page components
+            |-- Welcome.tsx                        Landing/splash page (video)
+            |-- Dashboard.tsx                      Main dashboard hub
+            |-- Chat.tsx                           AI chat (streaming + markdown)
+            |-- Projects.tsx                       Project list
+            |-- ProjectDetail.tsx                  Single project view
+            |-- Agents.tsx                         Agent selection hub
+            |-- AgentPage.tsx                      Generic agent page wrapper
+            |-- CodeVisualization.tsx              Full-page code visualization
+            |
+            |-- agents/                            Individual agent pages
+                |-- index.ts                       Barrel export
+                |-- CoderAgentPage.tsx             Coder agent UI
+                |-- DebuggerAgentPage.tsx          Debugger agent UI
+                |-- ArchitectAgentPage.tsx         Architect agent UI
+                |-- ReviewerAgentPage.tsx          Reviewer agent UI
+                |-- DocumenterAgentPage.tsx        Documenter agent UI
+                |-- TesterAgentPage.tsx            Tester agent UI
+                |-- RefactorerAgentPage.tsx        Refactorer agent UI
+                |-- ExplainerAgentPage.tsx         Explainer agent UI
+
+
+================================================================================
+SECTION 2: HOW THE PROJECT WORKS (Data Flow)
+================================================================================
+
+2.1  OVERALL ARCHITECTURE
+-------------------------
+                    +-------------------+
+                    |   React Frontend  |
+                    |   (Vite + TS)     |
+                    +--------+----------+
+                             |
+                     WebSocket / HTTP
+                             |
+                    +--------v----------+
+                    |   FastAPI Backend  |
+                    |   (Python async)   |
+                    +--------+----------+
+                             |
+              +--------------+--------------+
+              |              |              |
+     +--------v---+  +------v------+  +----v--------+
+     |  LangGraph  |  |   SQLite    |  |   Ollama    |
+     |  8 Agents   |  |   Database  |  |   LLM API   |
+     +-------------+  +-------------+  +-------------+
+
+
+2.2  REQUEST FLOW (How a user message becomes an AI response)
+--------------------------------------------------------------
+
+STEP 1: User types message in Chat.tsx
+         |
+STEP 2: api.ts sends POST /api/v1/chat with message payload
+         |
+STEP 3: FastAPI chat.py receives request
+         |
+STEP 4: Orchestrator analyzes intent, selects agent(s)
+         |  - Keyword matching routes to appropriate agent
+         |  - e.g. "debug this" -> debugger_agent
+         |  - e.g. "write tests" -> tester_agent
+         |
+STEP 5: Selected agent builds prompt with:
+         |  - System prompt (agent's specialty)
+         |  - User message
+         |  - Memory context (from memory_service)
+         |
+STEP 6: LLM service calls Ollama (gemma3:1b)
+         |  - If Ollama unavailable, falls back to mock responses
+         |  - Response streams token by token
+         |
+STEP 7: Response chunks sent back via WebSocket
+         |
+STEP 8: Frontend renders each chunk in real-time
+         |
+STEP 9: Memory service saves useful context for future reference
+
+
+2.3  AGENT ORCHESTRATION FLOW
+------------------------------
+
+User Request
+    |
+    v
++------------------+
+|   Orchestrator   |  <-- orchestrator.py uses LangGraph StateGraph
++------------------+
+    |
+    |--> Intent Analysis (keyword matching)
+    |
+    |--> Agent Selection (1 or more agents)
+    |
+    +--> +------------+
+         | Coder      |--> Writes code
+         | Debugger   |--> Finds bugs
+         | Architect  |--> Designs structure
+         | Reviewer   |--> Reviews quality
+         | Documenter |--> Writes docs
+         | Tester     |--> Creates tests
+         | Refactorer |--> Optimizes code
+         | Explainer  |--> Explains logic
+         +------------+
+              |
+              v
+         +----------+
+         | Results  |--> Formatted response sent to user
+         +----------+
+
+
+2.4  CODE VISUALIZATION FLOW
+------------------------------
+
+User pastes code
+    |
+    v
++------------------------+
+| trace_generator.py     |  Parses code using Python AST
++------------------------+
+    |
+    |--> Algorithm detection (algorithm_detector.py)
+    |    |  - Bubble sort? Binary search? Recursion? Tree?
+    |    |
+    |    +--> Generates type-specific trace steps
+    |         - Sorting: compare, swap steps
+    |         - Searching: compare, narrow steps
+    |         - Recursion: call stack, base case steps
+    |
+    v
++------------------------+
+| Trace JSON sent to     |
+| Frontend               |
++------------------------+
+    |
+    v
++------------------------+
+| VisualizationPanel     |  Renders animated visualization
+| - VisualizationControls|  (play/pause/step)
+| - DSAVisualizers       |  (array, tree, graph animations)
+| - ExecutionDetails     |  (variable tracking)
+| - ProgramOutputPanel   |  (stdout display)
++------------------------+
+
+
+2.5  WEBSOCKET FLOW (Real-time communication)
+-----------------------------------------------
+
+Frontend                           Backend
+   |                                 |
+   |--- ws://host:port/ws/{id} ----->|  Connection established
+   |                                 |
+   |--- {"type":"chat", ...} ------->|  User sends message
+   |                                 |
+   |<-- {"type":"chunk", ...} -------|  Streaming response chunks
+   |<-- {"type":"chunk", ...} -------|
+   |<-- {"type":"chunk", ...} -------|
+   |<-- {"type":"done"} -------------|  Response complete
+   |                                 |
+   |--- {"type":"ping"} ------------>|  Keep-alive
+   |<-- {"type":"pong"} -------------|
+   |                                 |
+   |    (auto-reconnect on close)    |
+
+
+2.6  MEMORY SYSTEM FLOW
+-------------------------
+
+Save memory:
+  User interaction --> memory_service.save() --> TF-IDF vectorize
+                                                      |
+                                              +-------v--------+
+                                              | Vector Store    |
+                                              | (in-memory)     |
+                                              +-------+--------+
+                                                      |
+                                              +-------v--------+
+                                              | SQLite DB       |
+                                              | (persistent)    |
+                                              +----------------+
+
+Search memory:
+  Query --> TF-IDF vectorize --> Cosine similarity search
+                                       |
+                               +-------v--------+
+                               | Top-K results   |
+                               | (ranked by      |
+                               |  relevance)     |
+                               +----------------+
+
+
+================================================================================
+SECTION 3: KEY FILE DESCRIPTIONS
+================================================================================
+
+BACKEND CORE:
+  main.py              - Creates FastAPI app, registers 8 routers, sets up
+                         WebSocket endpoint, creates DB tables on startup
+  config.py            - Loads all settings from .env: database URL, LLM
+                         model, JWT secrets, CORS origins
+  database.py          - Async SQLAlchemy engine, session factory, table
+                         creation
+  security.py          - JWT token creation/validation, bcrypt password
+                         hashing
+
+BACKEND AGENTS:
+  base_agent.py        - Abstract class all agents extend (defines interface)
+  orchestrator.py      - THE BRAIN: LangGraph StateGraph that routes requests
+                         to agents, chains their execution, collects results
+  registry.py          - Maps "coder" -> CoderAgent, "debugger" -> DebuggerAgent
+  *_agent.py (x8)      - Each agent's system prompt + LLM invocation logic
+
+BACKEND SERVICES:
+  llm_service.py       - Multi-provider LLM client (Ollama/OpenAI/fallback)
+  memory_service.py    - TF-IDF vector store + SQLite persistence
+  code_runner.py       - Sandboxed Python code execution with tracing
+  trace_generator.py   - AST-based algorithm detection + trace generation
+  algorithm_detector.py - Pattern-matching algorithm type detection
+  websocket_manager.py - WebSocket connection lifecycle management
+
+FRONTEND ENTRY:
+  main.tsx             - React root, BrowserRouter, 15 route definitions
+  api.ts               - Centralized HTTP client for all API calls
+  types.ts             - Shared TypeScript interfaces
+
+FRONTEND STATE:
+  useStore.ts          - Zustand store: projects, chats, sidebar state
+  websocket.ts         - WebSocket client with auto-reconnect
+
+FRONTEND COMPONENTS:
+  Layout.tsx           - App shell with sidebar navigation
+  CodeEditor.tsx       - Monaco Editor (VS Code editor in browser)
+  Terminal.tsx         - xterm.js terminal emulator
+  MarkdownRenderer.tsx - Renders AI markdown responses
+
+FRONTEND VISUALIZATION:
+  VisualizationPanel.tsx      - Main container
+  VisualizationControls.tsx   - Play/pause/step controls
+  DSAVisualizers.tsx          - Array, tree, graph animations
+  ExecutionDetails.tsx        - Variable state tracking
+
+FRONTEND PAGES:
+  Welcome.tsx          - Futuristic landing page with video
+  Dashboard.tsx        - Main hub after login
+  Chat.tsx             - AI chat with streaming markdown
+  CodeVisualization.tsx - Full-page code visualization
+  AgentPage.tsx        - Generic agent interaction page
+
+
+================================================================================
+SECTION 4: TECHNOLOGY STACK
+================================================================================
+
+LAYER                  TECHNOLOGY                PURPOSE
+---------------------- ------------------------- --------------------------------
+Backend Framework      FastAPI 0.115.0           Async REST + WebSocket server
+Database               SQLite + aiosqlite        Persistent storage
+ORM                    SQLAlchemy 2.0            Database abstraction
+AI/LLM                 Ollama (gemma3:1b)        Local LLM inference
+Agent Orchestration    LangGraph 0.2+            Multi-agent workflow engine
+Validation             Pydantic 2.9              Request/response schemas
+Auth                   python-jose + passlib     JWT + bcrypt
+HTTP Client            httpx 0.27                Async LLM API calls
+Frontend Framework     React 19 + TypeScript     UI framework
+Build Tool             Vite 8                    Dev server + bundler
+State Management       Zustand                   Global client state
+Code Editor            Monaco Editor             VS Code-quality editor
+Terminal               xterm.js                  Browser terminal emulator
+Animations             Framer Motion             UI transitions
+Icons                  Lucide React              Icon library
+Markdown               react-markdown            AI response rendering
+
+
+================================================================================
+SECTION 5: FILE COUNT SUMMARY
+================================================================================
+
+TYPE            COUNT   LOCATION
+--------------- ------- -------------------------------------------
+Python (.py)    ~55     backend/app/ + backend/tests/
+TypeScript (.tsx ~31     frontend/src/
+              .ts)
+CSS (.css)       2      frontend/src/
+HTML (.html)     1      frontend/index.html
+JSON (.json)     6      frontend/ (configs)
+TXT (.txt)       4      root/ (docs)
+MD (.md)         2      root/ + frontend/
+ENV (.env)       1      backend/
+INI (.ini)       2      backend/ + frontend/
+SVG (.svg)       4      frontend/public/
+MP3 (.mp3)       2      frontend/public/
+MP4 (.mp4)       4      frontend/public/
+-------- -----------
+TOTAL          ~120  (excluding node_modules, .git, __pycache__)
+
+
+================================================================================
+SECTION 6: QUICK NAVIGATION GUIDE
+================================================================================
+
+"I want to add a new API endpoint"
+  --> backend/app/api/v1/ (add or edit a route file)
+  --> Register in backend/app/main.py
+
+"I want to add a new AI agent"
+  --> backend/app/agents/new_agent.py (create agent class)
+  --> backend/app/agents/registry.py (register it)
+  --> backend/app/api/v1/agents.py (add API endpoint)
+
+"I want to change the UI"
+  --> frontend/src/components/ (reusable parts)
+  --> frontend/src/pages/ (full pages)
+
+"I want to modify how data is stored"
+  --> backend/app/models/ (SQLAlchemy models)
+  --> backend/app/schemas/ (Pydantic validation)
+
+"I want to change the LLM provider"
+  --> backend/app/services/llm_service.py
+  --> backend/.env (MODEL_PROVIDER, MODEL_NAME)
+
+"I want to add a new visualization type"
+  --> backend/app/services/trace_generator.py
+  --> frontend/src/components/visualization/
+
+"I want to debug the frontend"
+  --> Open browser dev tools
+  --> Check frontend/src/services/websocket.ts for WS logs
+
+"I want to debug the backend"
+  --> Check backend/server.log for FastAPI logs
+  --> Run: uvicorn app.main:app --reload --port 8000
+
+
+================================================================================
+                              END OF DIRECTORY GUIDE
+================================================================================
